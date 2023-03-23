@@ -22,7 +22,6 @@ export default function SearchPage() {
 	const dispatch = useAppDispatch()
 
 	const [fetchBooks, {isLoading, isFetching, isError}] = useLazyGetBooksQuery()
-	console.log(startIndex)
 	useEffect(() => {
 		handleFetchBooks()
 		setStartIndex(prev => prev + 30)
@@ -39,6 +38,7 @@ export default function SearchPage() {
 	}, [totalItems])
 
 	useEffect(() => {
+		setStartIndex(0)
 		handleFetchBooks()
 	}, [query])
 
