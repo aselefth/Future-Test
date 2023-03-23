@@ -9,7 +9,7 @@ export default function Navigation() {
 	function handleSubmitForm() {
 		if (inputRef?.current?.value === '') return
 		if (inputRef.current) {
-			navigate(`/search/${inputRef.current.value}`, {replace: true})
+			navigate(`/search/${inputRef.current.value}`, {replace: true, state: 'abc'})
 			inputRef.current.value = ''
 		}
 	}

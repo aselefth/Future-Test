@@ -28,10 +28,12 @@ export default function SearchPage() {
 		subject: category,
 	})
 
+	console.log(category, orderBy)
+
 	useEffect(() => {
 		const ids: Record<string, number> = {}
 		if (!data) return
-		if (query !== title) {
+		if (query === title) {
 			setBooks(data.items)
 			setQuery(String(title))
 		} else {
@@ -45,7 +47,6 @@ export default function SearchPage() {
 				})
 			})
 		}
-
 		setTotalItems(data.totalItems)
 	}, [data])
 
@@ -133,7 +134,7 @@ export default function SearchPage() {
 			</>
 
 			{hasNextPage &&
-				getBooksByCategory(books, category).length !== 0 && (
+				books.length !== 0 && (
 					<button
 						onClick={handleLoadBooks}
 						className={`px-2 py-1 shadow-md text-lg bg-green-700 
