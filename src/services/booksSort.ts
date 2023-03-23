@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react"
 import { IBook } from "../types/IBook"
-import { Category } from "../types/IRequest"
+import { Category, OrderBy } from "../types/IRequest"
 import getMappedEnum from "./getMappedEnum"
 
 export function handleChangeCategory(e: React.ChangeEvent<HTMLSelectElement>, setCategory: Dispatch<SetStateAction<Category>>) {
@@ -13,8 +13,6 @@ export function handleChangeCategory(e: React.ChangeEvent<HTMLSelectElement>, se
     }
 }
 
-// SetStateAction<Dispatch<Category>>
-
 export function getBooksByCategory(books: IBook[], category: string): IBook[] {
     if (category === Category.ALL) {
         return books
@@ -25,4 +23,12 @@ export function getBooksByCategory(books: IBook[], category: string): IBook[] {
     })
 
     return booksInCategory
+}
+
+export function handleChangeOrder(e: React.ChangeEvent<HTMLSelectElement>, setOrderBy: Dispatch<SetStateAction<OrderBy>>) {
+    for (let orderOption of getMappedEnum(OrderBy)) {
+        if (OrderBy[orderOption] === e.target.value) {
+            setOrderBy(() => OrderBy[orderOption])
+        }
+    }
 }

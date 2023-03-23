@@ -14,8 +14,8 @@ const booksApiSlice = createApi({
 	}),
 	endpoints: (build) => ({
 		getBooks: build.query<IBooksResponse, IBooksRequest>({
-			query: ({title, startIndex, orderBy}) => ({
-				url: `${booksQueryStr}&q=${title}&startIndex=${startIndex}&orderBy=${orderBy}`,
+			query: ({title, startIndex, orderBy, subject}) => ({
+				url: `${booksQueryStr}&q=${title}+subject:${subject}&startIndex=${startIndex}&orderBy=${orderBy}`,
 			}),
 			providesTags: ['Books']
 			

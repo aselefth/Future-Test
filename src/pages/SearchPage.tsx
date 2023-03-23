@@ -5,8 +5,8 @@ import BookSkeleton from '../components/BookSkeleton'
 import {
 	getBooksByCategory,
 	handleChangeCategory,
-} from '../services/booksCategories'
-import getMappedEnum from '../services/getMappedEnum'
+	handleChangeOrder,
+} from '../services/booksSort'
 import { useGetBooksQuery } from '../store/BooksApiSlice'
 import { IBook } from '../types/IBook'
 import { Category, OrderBy } from '../types/IRequest'
@@ -25,6 +25,7 @@ export default function SearchPage() {
 		title: String(title),
 		orderBy,
 		startIndex,
+		subject: category,
 	})
 
 	useEffect(() => {
@@ -60,19 +61,11 @@ export default function SearchPage() {
 		if (!data) return
 		setStartIndex(0)
 		setTotalItems(data?.totalItems)
-		setBooks(data.items)
-	}, [orderBy])
+		setBooks(data?.items)
+	}, [orderBy, category])
 
 	function handleLoadBooks() {
 		setStartIndex((prev) => prev + 30)
-	}
-
-	function handleChangeOrder(e: React.ChangeEvent<HTMLSelectElement>) {
-		for (let orderOption of getMappedEnum(OrderBy)) {
-			if (OrderBy[orderOption] === e.target.value) {
-				setOrderBy(OrderBy[orderOption])
-			}
-		}
 	}
 
 	return (
@@ -93,7 +86,7 @@ export default function SearchPage() {
 						<span>sort by</span>
 						<select
 							value={orderBy}
-							onChange={handleChangeOrder}
+							onChange={(e) => handleChangeOrder(e, setOrderBy)}
 							className='px-2 py-1 text-lg bg-gray-100'
 						>
 							{Object.values(OrderBy).map((orderOption) => (
@@ -114,7 +107,7 @@ export default function SearchPage() {
 						>
 							{Object.values(Category).map((category) => (
 								<option key={category} value={category}>
-									{category}
+									{category === '' ? 'all' : category}
 								</option>
 							))}
 						</select>

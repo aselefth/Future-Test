@@ -2,10 +2,11 @@ export interface IBooksRequest {
     title: string
     startIndex: number
     orderBy: OrderBy
+	subject: Category
 }
 
 export enum Category {
-	ALL = 'all',
+	ALL = '',
 	ART = 'Art',
 	BIOGRAPHY = 'Biography',
 	COMPUTERS = 'Computers',
