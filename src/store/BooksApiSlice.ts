@@ -30,4 +30,4 @@ const booksApiSlice = createApi({
 })
 
 export default booksApiSlice
-export const { useGetBooksQuery, useGetBookByIdQuery } = booksApiSlice
+export const { useGetBooksQuery, useGetBookByIdQuery, useLazyGetBooksQuery } = booksApiSlice

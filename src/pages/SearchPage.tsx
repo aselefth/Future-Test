@@ -3,70 +3,68 @@ import { useParams } from 'react-router-dom'
 import Book from '../components/Book'
 import BookSkeleton from '../components/BookSkeleton'
 import {
-	getBooksByCategory,
 	handleChangeCategory,
 	handleChangeOrder,
 } from '../services/booksSort'
-import { useGetBooksQuery } from '../store/BooksApiSlice'
-import { IBook } from '../types/IBook'
+import { useAppDispatch, useAppSelector } from '../store'
+import { appActions } from '../store/AppSlice'
+import { useLazyGetBooksQuery } from '../store/BooksApiSlice'
 import { Category, OrderBy } from '../types/IRequest'
 
 export default function SearchPage() {
-	const { query: title } = useParams<string>()
-	const [query, setQuery] = useState<string>(String(useParams().query))
-	const [books, setBooks] = useState<IBook[]>([])
+	const query = useParams<string>().query
+	const books = useAppSelector(state => state.appReducer.books)
 	const [startIndex, setStartIndex] = useState(0)
 	const [category, setCategory] = useState<Category>(Category.ALL)
 	const [orderBy, setOrderBy] = useState<OrderBy>(OrderBy.RELEVANCE)
 	const [totalItems, setTotalItems] = useState<number>(0)
 	const [hasNextPage, setHasNextPage] = useState<boolean>(false)
+	const dispatch = useAppDispatch()
 
-	const { data, isError, isFetching, isLoading } = useGetBooksQuery({
-		title: String(title),
-		orderBy,
-		startIndex,
-		subject: category,
-	})
-
-	console.log(category, orderBy)
+	const [fetchBooks, {isLoading, isFetching, isError}] = useLazyGetBooksQuery()
+	console.log(startIndex)
+	useEffect(() => {
+		handleFetchBooks()
+		setStartIndex(prev => prev + 30)
+	}, [])
 
 	useEffect(() => {
-		const ids: Record<string, number> = {}
-		if (!data) return
-		if (query === title) {
-			setBooks(data.items)
-			setQuery(String(title))
-		} else {
-			setBooks((prev) => {
-				return [...prev, ...data.items].filter((book) => {
-					if (ids[book.id]) return
-					else {
-						ids[book.id] = 1
-					}
-					return book
-				})
-			})
-		}
-		setTotalItems(data.totalItems)
-	}, [data])
-
-	useEffect(() => {
-		if (Math.ceil((totalItems - startIndex) / 30)) {
-			setHasNextPage(true)
-		} else {
-			setHasNextPage(false)
+		if (totalItems) {
+			if ((totalItems - startIndex) / 30 > 1) {
+				setHasNextPage(true)
+			} else {
+				setHasNextPage(false)
+			}
 		}
 	}, [totalItems])
 
 	useEffect(() => {
-		if (!data) return
-		setStartIndex(0)
-		setTotalItems(data?.totalItems)
-		setBooks(data?.items)
-	}, [orderBy, category])
+		handleFetchBooks()
+	}, [query])
 
-	function handleLoadBooks() {
-		setStartIndex((prev) => prev + 30)
+	async function handleFetchBooks() {
+		try {
+			const data = await fetchBooks({title: String(query), subject: category, orderBy, startIndex}).unwrap()
+			dispatch(appActions.setBooks({books: data.items}))
+			setTotalItems(data.totalItems)
+		} catch (e) {
+			console.log(e)
+		}
+	}
+
+	async function handleFetchMoreBooks() {
+		try {
+			const data = await fetchBooks({title: String(query), subject: category, orderBy, startIndex}).unwrap()
+			dispatch(appActions.addBooks({books: data.items}))
+			setTotalItems(data.totalItems)
+		} catch (e) {
+			console.log(e)
+		}
+	}
+
+	function handleLoadNewPage () {
+		handleFetchMoreBooks()
+		setStartIndex(prev => prev + 30)
 	}
 
 	return (
@@ -79,15 +77,15 @@ export default function SearchPage() {
 
 			<>
 				<h1 className='text-2xl'>
-					{data?.totalItems === 0 ? 'no ' : `${data?.totalItems} `}
-					results found for "{title}"
+					{totalItems === 0 ? 'no ' : `${totalItems} `}
+					results found for "{query}"
 				</h1>
 				<div className='flex gap-6 flex-wrap'>
 					<div className='flex gap-2 text-lg items-center'>
 						<span>sort by</span>
 						<select
 							value={orderBy}
-							onChange={(e) => handleChangeOrder(e, setOrderBy)}
+							onChange={(e) => handleChangeOrder(e, setOrderBy, handleFetchBooks, setStartIndex)}
 							className='px-2 py-1 text-lg bg-gray-100'
 						>
 							{Object.values(OrderBy).map((orderOption) => (
@@ -102,7 +100,7 @@ export default function SearchPage() {
 						<select
 							value={category}
 							onChange={(e) =>
-								handleChangeCategory(e, setCategory)
+								handleChangeCategory(e, setCategory, handleFetchBooks, setStartIndex)
 							}
 							className='px-2 py-1 text-lg bg-gray-100'
 						>
@@ -115,7 +113,7 @@ export default function SearchPage() {
 					</div>
 				</div>
 				<div className='flex flex-wrap gap-4 items-center justify-center'>
-					{getBooksByCategory(books, category).map((book) => (
+					{books.map((book) => (
 						<Book key={book.id} book={book} />
 					))}
 					{(isFetching || isLoading) && (
@@ -136,7 +134,7 @@ export default function SearchPage() {
 			{hasNextPage &&
 				books.length !== 0 && (
 					<button
-						onClick={handleLoadBooks}
+						onClick={handleLoadNewPage}
 						className={`px-2 py-1 shadow-md text-lg bg-green-700 
 					text-white mt-8 rounded hover:rounded-md hover:opacity-90 transition-all`}
 					>
