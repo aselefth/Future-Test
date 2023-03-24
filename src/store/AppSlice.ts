@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { filterFromDuplicate } from "../services/booksSort";
 import { IBook } from "../types/IBook";
-import { Category, OrderBy } from "../types/IRequest";
 
 interface InitialState {
     searchValue: string
